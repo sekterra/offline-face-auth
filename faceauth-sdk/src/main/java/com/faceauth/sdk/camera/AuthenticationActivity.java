@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -202,13 +203,22 @@ public final class AuthenticationActivity extends AppCompatActivity {
             // lState == PASSED → [4] 임베딩 + 매칭
             showGuide(FaceGuideOverlay.GuideState.LIVENESS, "인식 중...");
 
-            Bitmap aligned   = FaceAligner.align(frame, face);
-            float[] liveEmb  = faceEmbedder.embed(aligned);
+            Bitmap aligned = FaceAligner.align(frame, face);
+            long t0 = System.nanoTime();
+            float[] liveEmb = faceEmbedder.embed(aligned);
+            long inferenceMs = (System.nanoTime() - t0) / 1_000_000;
             aligned.recycle();
             frame.recycle();
 
+            Log.d("FaceAuthPOC", "embedding_dim=" + liveEmb.length
+                    + " inference_ms=" + inferenceMs);
+
             EmbeddingMatcher.MatchResult match =
                     EmbeddingMatcher.findTopMatch(liveEmb, candidates);
+
+            float rawCosineSim = 2f * match.matchScore - 1f;
+            Log.d("FaceAuthPOC", "raw_cosine_similarity=" + String.format("%.4f", rawCosineSim)
+                    + " match_score_normalized=" + String.format("%.4f", match.matchScore));
 
             // audit 저장
             String auditResult = match.matchScore >= config.matchThreshold
