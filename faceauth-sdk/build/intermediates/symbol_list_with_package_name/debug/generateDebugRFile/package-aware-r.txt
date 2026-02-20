@@ -1,0 +1,8 @@
+com.faceauth.sdk
+id face_guide_overlay
+id preview_view
+id progress_bar
+id tv_status
+layout activity_authentication
+layout activity_enrollment
+style Theme_FaceAuth
