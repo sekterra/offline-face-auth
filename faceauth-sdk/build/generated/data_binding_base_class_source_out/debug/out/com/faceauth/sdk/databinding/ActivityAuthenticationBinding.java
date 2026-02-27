@@ -48,11 +48,15 @@ public final class ActivityAuthenticationBinding implements ViewBinding {
   @NonNull
   public final TextView tvAuthResult;
 
+  @NonNull
+  public final TextView tvStatusMessage;
+
   private ActivityAuthenticationBinding(@NonNull ConstraintLayout rootView,
       @NonNull Button btnBackToList, @NonNull FaceGuideOverlay faceGuideOverlay,
       @NonNull LinearLayout panelResult, @NonNull PreviewView previewView,
       @NonNull ScrollView scrollAuthDebug, @NonNull TextView tvAuthBanner,
-      @NonNull TextView tvAuthDebug, @NonNull TextView tvAuthResult) {
+      @NonNull TextView tvAuthDebug, @NonNull TextView tvAuthResult,
+      @NonNull TextView tvStatusMessage) {
     this.rootView = rootView;
     this.btnBackToList = btnBackToList;
     this.faceGuideOverlay = faceGuideOverlay;
@@ -62,6 +66,7 @@ public final class ActivityAuthenticationBinding implements ViewBinding {
     this.tvAuthBanner = tvAuthBanner;
     this.tvAuthDebug = tvAuthDebug;
     this.tvAuthResult = tvAuthResult;
+    this.tvStatusMessage = tvStatusMessage;
   }
 
   @Override
@@ -139,9 +144,15 @@ public final class ActivityAuthenticationBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tv_status_message;
+      TextView tvStatusMessage = ViewBindings.findChildViewById(rootView, id);
+      if (tvStatusMessage == null) {
+        break missingId;
+      }
+
       return new ActivityAuthenticationBinding((ConstraintLayout) rootView, btnBackToList,
           faceGuideOverlay, panelResult, previewView, scrollAuthDebug, tvAuthBanner, tvAuthDebug,
-          tvAuthResult);
+          tvAuthResult, tvStatusMessage);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

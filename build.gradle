@@ -21,7 +21,7 @@ buildscript {
         materialVersion           = '1.12.0'
 
         junitVersion      = '4.13.2'
-        androidxTestVersion = '1.6.1'
+        androidxTestVersion = '1.2.0'   // 1.6.1 등 미존재 버전 사용 시 resolve 실패 방지
         espressoVersion   = '3.6.1'
     }
 

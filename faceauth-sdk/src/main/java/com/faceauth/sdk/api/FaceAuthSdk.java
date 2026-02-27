@@ -8,6 +8,7 @@ import android.os.Looper;
 
 import com.faceauth.sdk.camera.AuthenticationActivity;
 import com.faceauth.sdk.camera.EnrollmentActivity;
+import com.faceauth.sdk.logging.FileLogger;
 import com.faceauth.sdk.logging.SafeLogger;
 import com.faceauth.sdk.storage.EnrolledUserDebugRow;
 import com.faceauth.sdk.storage.StorageManager;
@@ -63,6 +64,7 @@ public final class FaceAuthSdk {
         synchronized (FaceAuthSdk.class) {
             if (INSTANCE == null) {
                 INSTANCE = new FaceAuthSdk(context.getApplicationContext(), config);
+                FileLogger.init(context.getApplicationContext());
                 SafeLogger.i("FaceAuthSdk", "SDK 초기화 완료 (modelVersion=" + config.modelVersion + ")");
             }
         }

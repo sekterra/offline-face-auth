@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 상태 메시지 영역 (Face Auth 검증 단계 문구 표시) -->
+    <string name="status_message_area">상태 메시지 영역</string>
+</resources>

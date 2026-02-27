@@ -22,6 +22,13 @@ android {
         buildConfig  true
     }
 
+    // 16 KB 페이지 디바이스 호환: .so 압축 패키징 (ML Kit / TFLite 의존성)
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     buildTypes {
         debug {
             buildConfigField 'boolean', 'POC_MODE', 'true'
@@ -48,7 +55,7 @@ dependencies {
     // ML Kit Face Detection (on-device, offline)
     implementation "com.google.mlkit:face-detection:$rootProject.mlkitFaceVersion"
 
-    // TensorFlow Lite
+    // TensorFlow Lite (0.4.4는 support/support-api 동일 namespace 경고 발생, 빌드는 진행됨)
     implementation "org.tensorflow:tensorflow-lite:$rootProject.tfliteVersion"
     implementation "org.tensorflow:tensorflow-lite-support:$rootProject.tfliteSupportVersion"
     implementation "org.tensorflow:tensorflow-lite-gpu:$rootProject.tfliteVersion"
@@ -57,6 +64,7 @@ dependencies {
     implementation "androidx.core:core:$rootProject.androidxCoreVersion"
     implementation "androidx.appcompat:appcompat:$rootProject.androidxAppcompatVersion"
     implementation "androidx.lifecycle:lifecycle-runtime:$rootProject.androidxLifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$rootProject.androidxLifecycleVersion"
     implementation "com.google.android.material:material:$rootProject.materialVersion"
 
     // Test

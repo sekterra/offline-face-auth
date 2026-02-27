@@ -1,9 +1,5 @@
 [
     {
-        "merged": "C:\\Users\\신창호부장\\.gradle\\daemon\\9.0-milestone-1\\com.faceauth.sample.sample-app-debug-40:\\layout_activity_main.xml.flat",
-        "source": "C:\\Users\\신창호부장\\.gradle\\daemon\\9.0-milestone-1\\com.faceauth.sample.sample-app-main-42:\\layout\\activity_main.xml"
-    },
-    {
         "merged": "com.faceauth.sample.sample-app-debug-40:/layout_activity_main.xml.flat",
         "source": "com.faceauth.sample.sample-app-main-42:/layout/activity_main.xml"
     },

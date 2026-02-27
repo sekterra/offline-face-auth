@@ -1,11 +1,13 @@
 package com.faceauth.sample;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
-import androidx.core.content.FileProvider;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -24,10 +26,12 @@ import com.faceauth.sdk.logging.SafeLogger;
 import com.faceauth.sdk.storage.EnrolledUserDebugRow;
 import com.google.android.material.button.MaterialButton;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 
 /**
@@ -150,25 +154,61 @@ public class MainActivity extends AppCompatActivity {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 String text = FaceAuthSdk.getEnrolledDataExportText();
-                File dir = new File(getFilesDir(), "export");
-                if (!dir.exists()) dir.mkdirs();
-                File file = new File(dir, "faceauth_export.txt");
-                try (FileOutputStream os = new FileOutputStream(file)) {
-                    os.write(text.getBytes(StandardCharsets.UTF_8));
+                byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+                String fileName = "faceauth_db_export_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".txt";
+
+                // Prefer Documents/FaceAuthDebug; fallback to Download/FaceAuthDebug (MTP/PC-visible).
+                String relativePath;
+                Uri uri = saveExportToMediaStore(fileName, bytes, true);
+                if (uri != null) {
+                    relativePath = Environment.DIRECTORY_DOCUMENTS + "/FaceAuthDebug/" + fileName;
+                } else {
+                    uri = saveExportToMediaStore(fileName, bytes, false);
+                    if (uri == null) {
+                        runOnUiThread(() -> Toast.makeText(this, "저장 실패: MediaStore에 파일을 만들 수 없습니다.", Toast.LENGTH_LONG).show());
+                        return;
+                    }
+                    relativePath = Environment.DIRECTORY_DOWNLOADS + "/FaceAuthDebug/" + fileName;
                 }
-                Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
+
+                final String pathForToast = relativePath;
                 runOnUiThread(() -> {
-                    Intent intent = new Intent(Intent.ACTION_SEND);
-                    intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(intent, "DB 데이터 저장/열기"));
-                    Toast.makeText(this, "파일 생성: " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Saved: " + pathForToast, Toast.LENGTH_LONG).show();
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "내보내기 실패: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(this, "내보내기 실패: " + (e.getMessage() != null ? e.getMessage() : "알 수 없음"), Toast.LENGTH_LONG).show());
             }
         });
+    }
+
+    /**
+     * Writes export bytes to a TXT file in a PC-visible folder via MediaStore (scoped storage).
+     * @param preferDocuments true = try Documents/FaceAuthDebug first; false = use Download/FaceAuthDebug only.
+     * @return Uri of created file, or null if insert failed.
+     */
+    private Uri saveExportToMediaStore(String displayName, byte[] content, boolean preferDocuments) throws Exception {
+        ContentValues cv = new ContentValues();
+        cv.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
+        cv.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+        if (preferDocuments) {
+            cv.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS + "/FaceAuthDebug");
+            Uri collection = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            Uri uri = getContentResolver().insert(collection, cv);
+            if (uri != null) {
+                try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+                    if (os != null) os.write(content);
+                }
+                return uri;
+            }
+        }
+        // Fallback: Download/FaceAuthDebug
+        cv.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/FaceAuthDebug");
+        Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+        if (uri == null) return null;
+        try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+            if (os != null) os.write(content);
+        }
+        return uri;
     }
 
     @Override

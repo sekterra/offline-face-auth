@@ -1,4 +1,4 @@
-#Fri Feb 27 10:26:17 KST 2026
+#Fri Feb 27 14:38:51 KST 2026
 base.0=C\:\\_project\\face\\faceauth-sdk-fixed\\sample-app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=C\:\\_project\\face\\faceauth-sdk-fixed\\sample-app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\11\\classes.dex
 base.10=C\:\\_project\\face\\faceauth-sdk-fixed\\sample-app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex

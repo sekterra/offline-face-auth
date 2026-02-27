@@ -22,18 +22,23 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.faceauth.sdk.R;
 import com.faceauth.sdk.api.AuthResult;
 import com.faceauth.sdk.api.FailureReason;
 import com.faceauth.sdk.api.FaceAuthConfig;
+import com.faceauth.sdk.api.VerificationState;
 import com.faceauth.sdk.api.FaceAuthSdk;
 import com.faceauth.sdk.detection.FaceAligner;
 import com.faceauth.sdk.detection.FaceDetector;
 import com.faceauth.sdk.embedding.FaceEmbedder;
 import com.faceauth.sdk.logging.AuthErrorLogger;
+import com.faceauth.sdk.logging.FileLogger;
 import com.faceauth.sdk.logging.SafeLogger;
 import com.faceauth.sdk.matcher.EmbeddingMatcher;
+import com.faceauth.sdk.matcher.SecondaryVerifier;
+import com.faceauth.sdk.matcher.TemplateCache;
 import com.faceauth.sdk.overlay.FaceGuideOverlay;
 import com.faceauth.sdk.quality.QualityGate;
 import com.faceauth.sdk.storage.ProfileRecord;
@@ -82,8 +87,12 @@ public final class AuthenticationActivity extends AppCompatActivity {
     private View            scrollAuthDebug;
     private TextView        tvAuthDebug;
     private TextView        tvAuthBanner;
+    /** 상태 메시지 영역 (Code: tvStatusMessage). ViewModel을 통해서만 갱신. */
+    private TextView        tvStatusMessage;
+    private AuthViewModel   authViewModel;
 
     private List<ProfileRecord> candidates;
+    private TemplateCache       templateCache;
     /** 현재 런 ID. 매 run 시작 시 갱신, 로그에 사용. */
     private int     currentAuthRunId;
     /** 인증 런 시작 시각 (1분 재시도 창 계산용). */
@@ -140,7 +149,12 @@ public final class AuthenticationActivity extends AppCompatActivity {
         scrollAuthDebug = findViewById(R.id.scroll_auth_debug);
         tvAuthDebug    = findViewById(R.id.tv_auth_debug);
         tvAuthBanner   = findViewById(R.id.tv_auth_banner);
+        tvStatusMessage = findViewById(R.id.tv_status_message);
         guideOverlay.setConfig(FaceAuthSdk.getConfig());
+        // 상태 메시지 영역은 가이드 오버레이(원 아래 텍스트)만 사용. 별도 TextView는 숨김.
+        if (tvStatusMessage != null) tvStatusMessage.setVisibility(View.GONE);
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         boolean debugBuild = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         if (debugBuild && scrollAuthDebug != null) {
@@ -191,6 +205,8 @@ public final class AuthenticationActivity extends AppCompatActivity {
                         FailureReason.FAIL_INTERNAL, 0f, "등록된 얼굴이 없습니다."));
                 return;
             }
+            templateCache = new TemplateCache(config.embeddingDim);
+            templateCache.setProfiles(candidates);
             gateDbLoadedThisRun = true;
             int count = candidates.size();
             StringBuilder ids = new StringBuilder("[");
@@ -278,7 +294,12 @@ public final class AuthenticationActivity extends AppCompatActivity {
             if (tid != null && tid.equals(lastTrackingId)) {
                 stableFrames++;
             } else {
-                stableFrames = (snapshot.selectedFace != null ? 1 : 0);
+                // tid가 바뀌어도 같은 얼굴이면 진행 유지: 한 단계만 감소 (연속 추적 끊김 완화)
+                if (snapshot.selectedFace != null) {
+                    stableFrames = Math.max(1, stableFrames - 1);
+                } else {
+                    stableFrames = 0;
+                }
                 lastTrackingId = tid;
             }
             gateStableReady = stableFrames >= config.authStableFramesRequired;
@@ -311,6 +332,7 @@ public final class AuthenticationActivity extends AppCompatActivity {
                 return;
             }
             if (!gateStableReady) {
+                postVerificationState(VerificationState.STABILIZING);
                 showGuide(FaceGuideOverlay.GuideState.QUALITY_OK, "얼굴을 인식 중...");
                 return;
             }
@@ -352,17 +374,14 @@ public final class AuthenticationActivity extends AppCompatActivity {
                     "{\"event\":\"auth_embedding_computed\",\"authRunId\":%d,\"dim\":%d,\"embeddingHash\":%.4f,\"norm\":%.4f}",
                     currentAuthRunId, liveEmb.length, hashSum, norm));
 
-            EmbeddingMatcher.MatchResult match =
-                    EmbeddingMatcher.findTopMatchWithLogging(liveEmb, candidates, config.matchThreshold, TAG);
+            postVerificationState(VerificationState.FIRST_VERIFY_RUNNING);
+            EmbeddingMatcher.TopTwoResult topTwo = EmbeddingMatcher.findTopTwoUsersWithMargin(liveEmb, candidates);
+            EmbeddingMatcher.findTopMatchWithLogging(liveEmb, candidates, config.matchThreshold, TAG);
 
             enrolledCount = candidates.size();
-            String bestId = match.bestProfile != null ? match.bestProfile.userId : null;
-            float bestScore = match.matchScore;
+            String bestId = topTwo.top1UserId;
+            float bestScore = topTwo.top1Score;
             threshold = config.matchThreshold;
-            boolean decisionMatch = match.matchScore >= threshold && match.bestProfile != null;
-            SafeLogger.i(TAG, String.format(
-                    "{\"event\":\"auth_match_result\",\"authRunId\":%d,\"bestId\":\"%s\",\"bestScore\":%.4f,\"threshold\":%.4f,\"decision\":\"%s\"}",
-                    currentAuthRunId, bestId != null ? bestId : "", bestScore, threshold, decisionMatch ? "MATCH" : "NO_MATCH"));
             lastGateComparedAll = true;
             lastEnrolledCount = enrolledCount;
             lastComparedCount = enrolledCount;
@@ -375,30 +394,113 @@ public final class AuthenticationActivity extends AppCompatActivity {
             lastIdsFirst3 = ids3.toString();
             lastBestId = bestId;
             lastBestScore = bestScore;
-            lastDecisionStr = decisionMatch ? "MATCH" : "NO_MATCH";
 
+            String profileType = "NORMAL";
+            float tHigh = config.grayTHigh, mHigh = config.grayMHigh, tLow = config.grayTLow;
+            boolean triggerSecondary = false;
+            float finalScore = topTwo.top1Score;
+            String decision = "NO_MATCH";
+            String reason = "";
+            String auditResult = "NO_MATCH";
+            Float centroidScoreObj = null;
+
+            if (topTwo.top1Score >= tHigh && topTwo.margin >= mHigh) {
+                decision = "ACCEPT";
+                reason = "primary";
+                auditResult = "SUCCESS";
+                finalScore = topTwo.top1Score;
+                postVerificationState(VerificationState.ACCEPT);
+            } else if (topTwo.top1Score < tLow) {
+                decision = "REJECT";
+                reason = "below_t_low";
+                auditResult = "NO_MATCH";
+                postVerificationState(VerificationState.REJECT);
+            } else {
+                triggerSecondary = true;
+                postVerificationState(VerificationState.SECONDARY_VERIFY_RUNNING);
+                SecondaryVerifier.Result sec = SecondaryVerifier.verify(
+                        liveEmb, topTwo.top1UserId, profileType, templateCache,
+                        config.grayT2, config.grayM2, config.grayMAmbiguous, topTwo.margin);
+                centroidScoreObj = Float.isNaN(sec.centroidScore) ? null : sec.centroidScore;
+                postVerificationState(VerificationState.SECONDARY_VERIFY_DONE);
+                switch (sec.decision) {
+                    case ACCEPT:
+                        decision = "ACCEPT";
+                        reason = "secondary";
+                        auditResult = "SUCCESS";
+                        finalScore = sec.centroidScore;
+                        postVerificationState(VerificationState.ACCEPT);
+                        break;
+                    case UNCERTAIN:
+                        decision = "UNCERTAIN";
+                        reason = "low_margin";
+                        auditResult = "LOW_MARGIN";
+                        postVerificationState(VerificationState.UNCERTAIN);
+                        break;
+                    case SECONDARY_FAIL:
+                        decision = "REJECT";
+                        reason = "secondary_fail";
+                        auditResult = "SECONDARY_FAIL";
+                        postVerificationState(VerificationState.REJECT);
+                        break;
+                }
+            }
+
+            lastDecisionStr = decision;
+            SafeLogger.i(TAG, String.format(
+                    "{\"event\":\"auth_match_result\",\"authRunId\":%d,\"bestId\":\"%s\",\"bestScore\":%.4f,\"top2Id\":\"%s\",\"top2Score\":%.4f,\"margin\":%.4f,\"decision\":\"%s\",\"triggerSecondary\":%s}",
+                    currentAuthRunId, bestId != null ? bestId : "", bestScore,
+                    topTwo.top2UserId != null ? topTwo.top2UserId : "", topTwo.top2Score, topTwo.margin,
+                    decision, triggerSecondary));
             SafeLogger.i(TAG, String.format(
                     "{\"event\":\"auth_compare_done\",\"authRunId\":%d,\"enrolledCount\":%d,\"comparedCount\":%d,\"bestId\":\"%s\",\"bestScore\":%.4f,\"threshold\":%.4f,\"decision\":\"%s\"}",
-                    currentAuthRunId, enrolledCount, enrolledCount, bestId != null ? bestId : "", bestScore, threshold, decisionMatch ? "MATCH" : "NO_MATCH"));
+                    currentAuthRunId, enrolledCount, enrolledCount, bestId != null ? bestId : "", bestScore, threshold, decision));
 
-            String auditResult = decisionMatch ? "SUCCESS" : "FAIL_MATCH";
+            JSONObject debugJson = null;
+            if (config.pocMode) {
+                try {
+                    debugJson = new JSONObject();
+                    debugJson.put("profileType", profileType);
+                    debugJson.put("top1UserId", bestId != null ? bestId : JSONObject.NULL);
+                    debugJson.put("top1Score", topTwo.top1Score);
+                    debugJson.put("top2UserId", topTwo.top2UserId != null ? topTwo.top2UserId : JSONObject.NULL);
+                    debugJson.put("top2Score", topTwo.top2Score);
+                    debugJson.put("margin", topTwo.margin);
+                    debugJson.put("triggerSecondary", triggerSecondary);
+                    if (centroidScoreObj != null) debugJson.put("centroidScore", centroidScoreObj);
+                    debugJson.put("decision", decision);
+                    debugJson.put("reason", reason);
+                    JSONObject quality = new JSONObject();
+                    quality.put("bboxAreaRatio", snapshot.bboxAreaRatio);
+                    quality.put("yawAbs", Math.abs(usedYaw));
+                    quality.put("stableFrames", stableFrames);
+                    quality.put("qualityScore", 0);
+                    debugJson.put("quality", quality);
+                } catch (Exception e) { SafeLogger.d(TAG, "debug_json build: " + e.getMessage()); }
+            }
             storageManager.saveAudit(
-                    auditResult, bestId, match.matchScore,
-                    config.pocMode ? "{score:" + match.matchScore + "}" : null);
+                    auditResult,
+                    "SUCCESS".equals(auditResult) ? topTwo.bestProfile != null ? topTwo.bestProfile.userId : bestId : null,
+                    finalScore,
+                    debugJson != null ? debugJson.toString() : null);
 
-            if (decisionMatch) {
+            if ("SUCCESS".equals(auditResult)) {
                 authDone = true;
-                deliverResult(AuthResult.success(match.bestProfile.userId, match.matchScore));
+                deliverResult(AuthResult.success(
+                        topTwo.bestProfile != null ? topTwo.bestProfile.userId : bestId, finalScore));
+            } else if ("LOW_MARGIN".equals(auditResult)) {
+                authDone = true;
+                deliverResult(AuthResult.failure(
+                        FailureReason.FAIL_LOW_MARGIN, finalScore, "다시 시도해 주세요."));
             } else {
                 long elapsedMs = System.currentTimeMillis() - runStartTimeMs;
                 if (elapsedMs < AUTH_RUN_MAX_MS) {
-                    // 1분 미만: 재시도 (안정 프레임 리셋 후 다시 시도)
                     stableFrames = 0;
                     lastTrackingId = null;
                     gateEmbeddingComputedThisRun = false;
+                    postVerificationState(VerificationState.IDLE);
                     SafeLogger.i(TAG, String.format("{\"event\":\"auth_no_match_retry\",\"authRunId\":%d,\"elapsedMs\":%d,\"maxMs\":%d,\"bestScore\":%.4f,\"threshold\":%.4f}",
                             currentAuthRunId, elapsedMs, AUTH_RUN_MAX_MS, bestScore, threshold));
-                    // #region agent log
                     try {
                         JSONObject o = new JSONObject();
                         o.put("hypothesisId", "H2");
@@ -408,12 +510,11 @@ public final class AuthenticationActivity extends AppCompatActivity {
                         o.put("data", new JSONObject().put("authRunId", currentAuthRunId).put("elapsedMs", elapsedMs).put("maxMs", AUTH_RUN_MAX_MS).put("bestScore", bestScore).put("threshold", threshold).put("willRetry", true));
                         appendDebugLog(o.toString());
                     } catch (Exception e) { /* ignore */ }
-                    // #endregion
                     return;
                 }
                 authDone = true;
                 deliverResult(AuthResult.failure(
-                        FailureReason.FAIL_MATCH, match.matchScore,
+                        FailureReason.FAIL_MATCH, finalScore,
                         "얼굴 인식에 실패했습니다. 다른 방법으로 로그인해 주세요."));
             }
 
@@ -433,6 +534,29 @@ public final class AuthenticationActivity extends AppCompatActivity {
         } finally {
             proxy.close();
         }
+    }
+
+    /**
+     * 검증 상태 반영. 상태 메시지 영역은 가이드 오버레이(원 아래) 한 곳만 사용하므로,
+     * IDLE/STABILIZING 제외 시 해당 메시지를 가이드에 표시.
+     */
+    private void postVerificationState(VerificationState state) {
+        if (state != null && FileLogger.isInitialized()) {
+            FileLogger.log(TAG, "I", "verification_state authRunId=" + currentAuthRunId + " state=" + state.name());
+        }
+        mainHandler.post(() -> {
+            if (isFinishing()) return;
+            if (authViewModel != null) authViewModel.updateStatusMessage(state);
+            if (state != null && state != VerificationState.IDLE && state != VerificationState.STABILIZING) {
+                String msg = state.getDisplayMessage();
+                if (msg != null && !msg.isEmpty()) {
+                    FaceGuideOverlay.GuideState gs = (state == VerificationState.REJECT || state == VerificationState.UNCERTAIN)
+                            ? FaceGuideOverlay.GuideState.FAIL : FaceGuideOverlay.GuideState.QUALITY_OK;
+                    guideOverlay.update(gs, msg);
+                    updateAuthDebugPanel();
+                }
+            }
+        });
     }
 
     private void showGuide(FaceGuideOverlay.GuideState state, String msg) {
@@ -471,6 +595,7 @@ public final class AuthenticationActivity extends AppCompatActivity {
         lastTrackingId = null;
         gateDbLoadedThisRun = false;
         gateEmbeddingComputedThisRun = false;
+        postVerificationState(VerificationState.IDLE);
     }
 
     private void logEnrolledEmbeddingSample(int count) {
@@ -510,8 +635,9 @@ public final class AuthenticationActivity extends AppCompatActivity {
             } else {
                 tvAuthResult.setText("인식 실패\n" + (result.message != null ? result.message : "")
                         + "\n기준(threshold): " + String.format("%.2f", config.matchThreshold));
-                android.widget.Toast.makeText(AuthenticationActivity.this,
-                        "오류가 발생했습니다.", android.widget.Toast.LENGTH_LONG).show();
+                String toastMsg = result.failureReason == FailureReason.FAIL_LOW_MARGIN
+                        ? (result.message != null ? result.message : "다시 시도해 주세요.") : "오류가 발생했습니다.";
+                android.widget.Toast.makeText(AuthenticationActivity.this, toastMsg, android.widget.Toast.LENGTH_LONG).show();
             }
             panelResult.setVisibility(View.VISIBLE);
             btnBackToList.setVisibility(View.VISIBLE);
@@ -616,6 +742,21 @@ public final class AuthenticationActivity extends AppCompatActivity {
             deliverResult(AuthResult.failure(
                     FailureReason.FAIL_CAMERA, 0f,
                     "카메라 권한이 거부되었습니다. 설정에서 허용해 주세요."));
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (cameraExecutor != null && storageManager != null && templateCache != null && !authDone) {
+            cameraExecutor.execute(() -> {
+                List<ProfileRecord> fresh = storageManager.loadAllActiveProfiles();
+                if (fresh != null && !fresh.isEmpty()) {
+                    candidates = fresh;
+                    templateCache.setProfiles(candidates);
+                    SafeLogger.d(TAG, "template cache refreshed on resume, count=" + fresh.size());
+                }
+            });
         }
     }
 

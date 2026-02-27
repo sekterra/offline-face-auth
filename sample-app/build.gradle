@@ -24,6 +24,13 @@ android {
         buildConfig true
     }
 
+    // 16 KB 페이지 디바이스 호환: .so를 압축 패키징하여 정렬 경고 완화 (SDK 버전 변경 없음)
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     // TFLite 파일 압축 방지 (필수)
     aaptOptions {
         noCompress 'tflite'

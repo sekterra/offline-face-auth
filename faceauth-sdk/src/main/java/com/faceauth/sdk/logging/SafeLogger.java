@@ -27,19 +27,27 @@ public final class SafeLogger {
     }
 
     public static void i(String tag, String msg) {
-        Log.i(SDK_TAG_PREFIX + tag, sanitize(msg));
+        String s = sanitize(msg);
+        Log.i(SDK_TAG_PREFIX + tag, s);
+        if (FileLogger.isInitialized()) FileLogger.log(SDK_TAG_PREFIX + tag, "I", s);
     }
 
     public static void w(String tag, String msg) {
-        Log.w(SDK_TAG_PREFIX + tag, sanitize(msg));
+        String s = sanitize(msg);
+        Log.w(SDK_TAG_PREFIX + tag, s);
+        if (FileLogger.isInitialized()) FileLogger.log(SDK_TAG_PREFIX + tag, "W", s);
     }
 
     public static void e(String tag, String msg) {
-        Log.e(SDK_TAG_PREFIX + tag, sanitize(msg));
+        String s = sanitize(msg);
+        Log.e(SDK_TAG_PREFIX + tag, s);
+        if (FileLogger.isInitialized()) FileLogger.log(SDK_TAG_PREFIX + tag, "E", s);
     }
 
     public static void e(String tag, String msg, Throwable t) {
-        Log.e(SDK_TAG_PREFIX + tag, sanitize(msg), t);
+        String s = sanitize(msg);
+        Log.e(SDK_TAG_PREFIX + tag, s, t);
+        if (FileLogger.isInitialized()) FileLogger.log(SDK_TAG_PREFIX + tag, "E", s + " " + (t != null ? t.getMessage() : ""));
     }
 
     /**

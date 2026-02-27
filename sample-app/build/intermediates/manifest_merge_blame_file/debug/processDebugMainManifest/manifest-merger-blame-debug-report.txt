@@ -47,7 +47,7 @@
 29        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 29-->[androidx.core:core:1.13.1] C:\Users\신창호부장\.gradle\caches\9.0-milestone-1\transforms\61a7650ad27294dfdf9488c0d3fa86ba\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 30        android:debuggable="true"
-31        android:extractNativeLibs="false"
+31        android:extractNativeLibs="true"
 32        android:label="FaceAuth 데모"
 32-->C:\_project\face\faceauth-sdk-fixed\sample-app\src\main\AndroidManifest.xml:5:9-36
 33        android:testOnly="true"

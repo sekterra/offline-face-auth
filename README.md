@@ -46,7 +46,8 @@ OfflineFaceAuth/
 │       │   ├── ProfileRecord.java
 │       │   └── CryptoException.java
 │       └── logging/
-│           └── SafeLogger.java              ← PII-safe 로거
+│           ├── SafeLogger.java              ← PII-safe 로거 (Logcat + FileLogger 전달)
+│           └── FileLogger.java              ← 런타임 파일 로그 (회전·버퍼)
 │
 └── sample-app/                      ← 통합 데모 앱
     └── src/main/java/com/faceauth/sample/

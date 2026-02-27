@@ -3,7 +3,9 @@ package com.faceauth.sdk.overlay;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
@@ -27,6 +29,8 @@ public final class FaceGuideOverlay extends View {
     private final Paint circleStrokePaint;
     private final Paint clearPaint;
     private final Paint textPaint;
+    /** White dashed crosshair inside circle; stroke 2dp, dash 10px/10px (density-adjusted). */
+    private final Paint crosshairPaint;
 
     private GuideState state   = GuideState.IDLE;
     private String     message = "얼굴을 원 안에 맞춰주세요";
@@ -68,6 +72,13 @@ public final class FaceGuideOverlay extends View {
         textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(48f);
         textPaint.setTextAlign(Paint.Align.CENTER);
+
+        float density = getResources().getDisplayMetrics().density;
+        crosshairPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        crosshairPaint.setColor(Color.WHITE);
+        crosshairPaint.setStyle(Paint.Style.STROKE);
+        crosshairPaint.setStrokeWidth(2f * density);
+        crosshairPaint.setPathEffect(new DashPathEffect(new float[]{10f * density, 10f * density}, 0f));
     }
 
     /** SSoT: 동적 preset 사용 시 config 설정. 모든 화면에서 동일. */
@@ -128,6 +139,16 @@ public final class FaceGuideOverlay extends View {
         canvas.drawCircle(centerX, centerY, circleRadiusPx, clearPaint);
         circleStrokePaint.setColor(stateColor());
         canvas.drawCircle(centerX, centerY, circleRadiusPx, circleStrokePaint);
+
+        // Crosshair: white dashed vertical/horizontal lines inside circle only
+        canvas.save();
+        Path circlePath = new Path();
+        circlePath.addCircle(centerX, centerY, circleRadiusPx, Path.Direction.CW);
+        canvas.clipPath(circlePath);
+        canvas.drawLine(centerX, centerY - circleRadiusPx, centerX, centerY + circleRadiusPx, crosshairPaint);
+        canvas.drawLine(centerX - circleRadiusPx, centerY, centerX + circleRadiusPx, centerY, crosshairPaint);
+        canvas.restore();
+
         textPaint.setColor(Color.WHITE);
         float textY = centerY + circleRadiusPx + 80f;
         canvas.drawText(message, w / 2f, textY, textPaint);

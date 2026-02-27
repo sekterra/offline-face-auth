@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- 카메라 프리뷰 (전체 화면) -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/preview_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 가이드 오버레이 (프리뷰 위) -->
+    <com.faceauth.sdk.overlay.FaceGuideOverlay
+        android:id="@+id/face_guide_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 상태 텍스트 (중앙, 가이드/실패 메시지 영역 — 겹치지 않음) -->
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="대기"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:background="#CC000000"
+        android:maxWidth="320dp"
+        app:layout_constraintBottom_toTopOf="@id/tv_metrics"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 메트릭 (좌측 하단, 멀티라인, 중앙 메시지와 분리) -->
+    <TextView
+        android:id="@+id/tv_metrics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="260dp"
+        android:text=""
+        android:textColor="#E0FFFFFF"
+        android:textSize="11sp"
+        android:lineSpacingExtra="2dp"
+        android:padding="8dp"
+        android:background="#99000000"
+        android:fontFamily="monospace"
+        android:maxLines="10"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 메인으로 (SUCCESS 시만 표시) -->
+    <Button
+        android:id="@+id/btn_go_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="메인으로"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="24dp"
+        android:layout_marginStart="24dp" />
+
+    <!-- 초기화 버튼 (ARMED/CAPTURING/SUCCESS/FAILED 시만 표시) -->
+    <Button
+        android:id="@+id/btn_reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="초기화"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="24dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

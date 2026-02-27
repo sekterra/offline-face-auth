@@ -62,6 +62,24 @@
             android:text="[Evidence]" />
     </ScrollView>
 
+    <!-- 상태 메시지 영역 (한국어: 상태 메시지 영역) | Code: tvStatusMessage -->
+    <TextView
+        android:id="@+id/tv_status_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:contentDescription="@string/status_message_area"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:shadowColor="#80000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- 결과 패널 (인식 완료 시 표시, 목록으로 버튼) -->
     <LinearLayout
         android:id="@+id/panel_result"

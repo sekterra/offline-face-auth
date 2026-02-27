@@ -12,7 +12,9 @@ id tv_auth_result
 id tv_liveness_result
 id tv_metrics
 id tv_status
+id tv_status_message
 layout activity_authentication
 layout activity_enrollment
 layout activity_liveness
+string status_message_area
 style Theme_FaceAuth

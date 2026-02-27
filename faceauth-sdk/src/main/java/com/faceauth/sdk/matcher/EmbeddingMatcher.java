@@ -3,7 +3,10 @@ package com.faceauth.sdk.matcher;
 import com.faceauth.sdk.logging.SafeLogger;
 import com.faceauth.sdk.storage.ProfileRecord;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 코사인 유사도 기반 Top-1 매처.
@@ -25,6 +28,64 @@ public final class EmbeddingMatcher {
             this.bestProfile = profile;
             this.matchScore  = score;
         }
+    }
+
+    /**
+     * SSOT v1: 사용자 단위 Top-1/Top-2 + margin.
+     * 동일 user_id의 여러 템플릿 중 최고 점수로 사용자 순위.
+     */
+    public static final class TopTwoResult {
+        public final String         top1UserId;
+        public final float          top1Score;
+        public final String         top2UserId;   // null if 단일 사용자
+        public final float          top2Score;
+        public final float          margin;      // top1Score - top2Score (top2 없으면 1 - top2Score 등 큰 값)
+        public final ProfileRecord bestProfile;  // top1을 만든 템플릿(임의 1개)
+
+        TopTwoResult(String top1UserId, float top1Score, String top2UserId, float top2Score,
+                     float margin, ProfileRecord bestProfile) {
+            this.top1UserId   = top1UserId;
+            this.top1Score    = top1Score;
+            this.top2UserId   = top2UserId;
+            this.top2Score    = top2Score;
+            this.margin      = margin;
+            this.bestProfile = bestProfile;
+        }
+    }
+
+    /**
+     * 사용자별 최고 점수 계산 후 Top-1/Top-2 사용자와 margin 반환.
+     * 모든 템플릿을 고려 (multi-template).
+     */
+    public static TopTwoResult findTopTwoUsersWithMargin(float[] liveEmbedding,
+                                                          List<ProfileRecord> candidates) {
+        if (candidates == null || candidates.isEmpty()) {
+            return new TopTwoResult(null, 0f, null, 0f, 0f, null);
+        }
+        Map<String, Float> byUser = new LinkedHashMap<>();
+        for (ProfileRecord c : candidates) {
+            if (c.embedding == null || c.embedding.length != liveEmbedding.length) continue;
+            float score = cosineSimilarityNorm(liveEmbedding, c.embedding);
+            Float cur = byUser.get(c.userId);
+            if (cur == null || score > cur) byUser.put(c.userId, score);
+        }
+        List<Map.Entry<String, Float>> sorted = new ArrayList<>(byUser.entrySet());
+        sorted.sort((a, b) -> Float.compare(b.getValue(), a.getValue()));
+        String top1Id = sorted.isEmpty() ? null : sorted.get(0).getKey();
+        float top1Score = sorted.isEmpty() ? 0f : sorted.get(0).getValue();
+        String top2Id = sorted.size() < 2 ? null : sorted.get(1).getKey();
+        float top2Score = sorted.size() < 2 ? 0f : sorted.get(1).getValue();
+        float margin = top1Score - top2Score;
+        ProfileRecord top1Profile = null;
+        if (top1Id != null) {
+            for (ProfileRecord c : candidates) {
+                if (top1Id.equals(c.userId) && c.embedding != null && c.embedding.length == liveEmbedding.length) {
+                    float s = cosineSimilarityNorm(liveEmbedding, c.embedding);
+                    if (Math.abs(s - top1Score) < 1e-5f) { top1Profile = c; break; }
+                }
+            }
+        }
+        return new TopTwoResult(top1Id, top1Score, top2Id, top2Score, margin, top1Profile);
     }
 
     /**

@@ -77,6 +77,37 @@ public class EmbeddingMatcherTest {
         assertTrue(result.matchScore > 0.8f);
     }
 
+    // ── SSOT v1: TopTwo 사용자·margin ──────────────────────────────────
+    @Test
+    public void findTopTwoUsersWithMargin_twoUsers_returnsTop1Top2Margin() {
+        float[] live = l2Normalize(new float[]{1f, 0f, 0f});
+        ProfileRecord u1a = makeProfile("user_a", new float[]{1f, 0.02f, 0f});
+        ProfileRecord u1b = makeProfile("user_a", new float[]{1f, 0.03f, 0f});
+        ProfileRecord u2  = makeProfile("user_b", new float[]{0f, 1f, 0f});
+        List<ProfileRecord> candidates = Arrays.asList(u2, u1a, u1b);
+
+        EmbeddingMatcher.TopTwoResult r = EmbeddingMatcher.findTopTwoUsersWithMargin(live, candidates);
+
+        assertEquals("user_a", r.top1UserId);
+        assertEquals("user_b", r.top2UserId);
+        assertTrue(r.top1Score > 0.8f);
+        assertTrue(r.top2Score < 0.6f);
+        assertTrue(r.margin > 0.2f);
+        assertNotNull(r.bestProfile);
+        assertEquals("user_a", r.bestProfile.userId);
+    }
+
+    @Test
+    public void findTopTwoUsersWithMargin_empty_returnsNullsAndZero() {
+        float[] live = l2Normalize(new float[]{1f, 0f, 0f});
+        EmbeddingMatcher.TopTwoResult r = EmbeddingMatcher.findTopTwoUsersWithMargin(live, Collections.emptyList());
+        assertNull(r.top1UserId);
+        assertNull(r.top2UserId);
+        assertEquals(0f, r.top1Score, 1e-5f);
+        assertEquals(0f, r.margin, 1e-5f);
+        assertNull(r.bestProfile);
+    }
+
     // ── 헬퍼 ──────────────────────────────────────────────────────────
 
     private static ProfileRecord makeProfile(String userId, float[] emb) {

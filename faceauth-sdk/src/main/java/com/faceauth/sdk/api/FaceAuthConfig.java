@@ -19,6 +19,18 @@ public final class FaceAuthConfig {
     /** 코사인 match_score 통과 기준 (0.80). COSINE_MATCH_THRESHOLD. */
     public final float matchThreshold;
 
+    // ── SSOT v1 2차 검증 (gray zone) ─────────────────────────────────────
+    /** 1차 통과: top1Score >= T_HIGH && margin >= M_HIGH → ACCEPT */
+    public final float grayTHigh;
+    public final float grayMHigh;
+    /** 1차 거절: top1Score < T_LOW → NO_MATCH */
+    public final float grayTLow;
+    /** 2차 통과: centroidScore >= T2 && margin >= M2 → ACCEPT */
+    public final float grayT2;
+    public final float grayM2;
+    /** margin < M_AMBIGUOUS → UNCERTAIN(LOW_MARGIN), "다시 시도" */
+    public final float grayMAmbiguous;
+
     // ── Enrollment (SSoT) ───────────────────────────────────────────────
     /** 연속 안정 프레임 수 (5~10 권장, 기본 7) */
     public final int   requiredStableFrames;
@@ -120,6 +132,12 @@ public final class FaceAuthConfig {
 
     private FaceAuthConfig(Builder b) {
         this.matchThreshold           = b.matchThreshold;
+        this.grayTHigh                = b.grayTHigh;
+        this.grayMHigh                = b.grayMHigh;
+        this.grayTLow                 = b.grayTLow;
+        this.grayT2                   = b.grayT2;
+        this.grayM2                   = b.grayM2;
+        this.grayMAmbiguous           = b.grayMAmbiguous;
         this.requiredStableFrames      = b.requiredStableFrames;
         this.minBboxAreaRatio          = b.minBboxAreaRatio;
         this.enrollMaxAbsYaw           = b.enrollMaxAbsYaw;
@@ -187,6 +205,13 @@ public final class FaceAuthConfig {
     public static final class Builder {
         // ── 매칭
         float   matchThreshold          = 0.80f;
+        // ── Gray zone (SSOT v1)
+        float   grayTHigh               = 0.88f;
+        float   grayMHigh               = 0.06f;
+        float   grayTLow                = 0.70f;
+        float   grayT2                  = 0.82f;
+        float   grayM2                  = 0.04f;
+        float   grayMAmbiguous           = 0.03f;
         // ── Enrollment (SSoT)
         int     requiredStableFrames   = 7;
         float   minBboxAreaRatio        = 0.05f;
@@ -195,7 +220,7 @@ public final class FaceAuthConfig {
         // ── Authentication 품질 게이트
         float   authYawMaxDeg           = 18f;
         float   authMinFaceAreaRatio    = 0.12f;
-        int     authStableFramesRequired = 5;
+        int     authStableFramesRequired = 3;
         // ── Yaw / Liveness (SSoT)
         float   yawCenterMaxAbsDeg      = 10f;
         float   yawLeftMinDeg           = -13f;
@@ -234,6 +259,12 @@ public final class FaceAuthConfig {
         boolean pocMode                 = false;
 
         public Builder matchThreshold(float v)          { matchThreshold = v;          return this; }
+        public Builder grayTHigh(float v)               { grayTHigh = v;              return this; }
+        public Builder grayMHigh(float v)               { grayMHigh = v;              return this; }
+        public Builder grayTLow(float v)                { grayTLow = v;               return this; }
+        public Builder grayT2(float v)                  { grayT2 = v;                 return this; }
+        public Builder grayM2(float v)                  { grayM2 = v;                 return this; }
+        public Builder grayMAmbiguous(float v)          { grayMAmbiguous = v;        return this; }
         public Builder requiredStableFrames(int v)      { requiredStableFrames = v;    return this; }
         public Builder minBboxAreaRatio(float v)        { minBboxAreaRatio = v;         return this; }
         public Builder enrollMaxAbsYaw(float v)         { enrollMaxAbsYaw = v;          return this; }
