@@ -1,0 +1,66 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace   'com.faceauth.sdk'
+    compileSdk  rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        minSdk     rootProject.ext.minSdkVersion
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig  true
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField 'boolean', 'POC_MODE', 'true'
+        }
+        release {
+            minifyEnabled false
+            buildConfigField 'boolean', 'POC_MODE', 'false'
+        }
+    }
+
+    // TFLite 파일 압축 방지 (필수)
+    aaptOptions {
+        noCompress 'tflite'
+    }
+}
+
+dependencies {
+    // CameraX
+    implementation "androidx.camera:camera-core:$rootProject.cameraXVersion"
+    implementation "androidx.camera:camera-camera2:$rootProject.cameraXVersion"
+    implementation "androidx.camera:camera-lifecycle:$rootProject.cameraXVersion"
+    implementation "androidx.camera:camera-view:$rootProject.cameraXVersion"
+
+    // ML Kit Face Detection (on-device, offline)
+    implementation "com.google.mlkit:face-detection:$rootProject.mlkitFaceVersion"
+
+    // TensorFlow Lite
+    implementation "org.tensorflow:tensorflow-lite:$rootProject.tfliteVersion"
+    implementation "org.tensorflow:tensorflow-lite-support:$rootProject.tfliteSupportVersion"
+    implementation "org.tensorflow:tensorflow-lite-gpu:$rootProject.tfliteVersion"
+
+    // AndroidX
+    implementation "androidx.core:core:$rootProject.androidxCoreVersion"
+    implementation "androidx.appcompat:appcompat:$rootProject.androidxAppcompatVersion"
+    implementation "androidx.lifecycle:lifecycle-runtime:$rootProject.androidxLifecycleVersion"
+    implementation "com.google.android.material:material:$rootProject.materialVersion"
+
+    // Test
+    testImplementation "junit:junit:$rootProject.junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$rootProject.androidxTestVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.espressoVersion"
+}

@@ -1,0 +1,63 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.faceauth.sdk" >
+4
+5    <uses-sdk android:minSdkVersion="33" />
+6
+7    <!-- 카메라 권한 -->
+8    <uses-permission android:name="android.permission.CAMERA" />
+8-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:5:5-65
+8-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:5:22-62
+9    <!-- 진동(챌린지 피드백) -->
+10    <uses-permission android:name="android.permission.VIBRATE" />
+10-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:7:5-66
+10-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:7:22-63
+11
+12    <uses-feature
+12-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:9:5-90
+13        android:name="android.hardware.camera.front"
+13-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:9:19-63
+14        android:required="true" />
+14-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:9:64-87
+15
+16    <application>
+16-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:11:5-32:19
+17
+18        <!-- 내장 등록 Activity -->
+19        <activity
+19-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:13:9-17:53
+20            android:name="com.faceauth.sdk.camera.EnrollmentActivity"
+20-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:14:13-54
+21            android:exported="false"
+21-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:15:13-37
+22            android:screenOrientation="portrait"
+22-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:16:13-49
+23            android:theme="@style/Theme.FaceAuth" />
+23-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:17:13-50
+24
+25        <!-- 내장 인증 Activity -->
+26        <activity
+26-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:20:9-24:53
+27            android:name="com.faceauth.sdk.camera.AuthenticationActivity"
+27-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:21:13-58
+28            android:exported="false"
+28-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:22:13-37
+29            android:screenOrientation="portrait"
+29-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:23:13-49
+30            android:theme="@style/Theme.FaceAuth" />
+30-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:24:13-50
+31
+32        <!-- 라이브니스 검증 (머리 돌리기 전용) -->
+33        <activity
+33-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:27:9-31:53
+34            android:name="com.faceauth.sdk.camera.LivenessActivity"
+34-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:28:13-52
+35            android:exported="false"
+35-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:29:13-37
+36            android:screenOrientation="portrait"
+36-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:30:13-49
+37            android:theme="@style/Theme.FaceAuth" />
+37-->C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:31:13-50
+38    </application>
+39
+40</manifest>

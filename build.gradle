@@ -1,0 +1,40 @@
+// Top-level build file
+buildscript {
+    ext {
+        // ── SDK 버전 ────────────────────────────────────────────────────
+        agpVersion          = '8.5.2'
+        compileSdkVersion   = 34        // 의존성(CameraX 등) 요구; minSdk 33으로 Galaxy 실행 가능
+        minSdkVersion       = 33        // Galaxy 등 API 33 기기 테스트
+        targetSdkVersion    = 34
+
+        // ── 라이브러리 버전 ──────────────────────────────────────────────
+        cameraXVersion      = '1.3.4'
+        mlkitFaceVersion    = '16.1.7'
+        tfliteVersion       = '2.16.1'
+        tfliteSupportVersion = '0.4.4'
+
+        androidxCoreVersion       = '1.13.1'
+        androidxAppcompatVersion  = '1.7.0'
+        androidxLifecycleVersion  = '2.8.4'
+        androidxActivityVersion   = '1.9.1'
+        androidxConstraintVersion = '2.1.4'
+        materialVersion           = '1.12.0'
+
+        junitVersion      = '4.13.2'
+        androidxTestVersion = '1.6.1'
+        espressoVersion   = '3.6.1'
+    }
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:$agpVersion"
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace   'com.faceauth.sample'
+    compileSdk  rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId   'com.faceauth.sample'
+        minSdk          rootProject.ext.minSdkVersion
+        targetSdk       rootProject.ext.targetSdkVersion
+        versionCode     1
+        versionName     '1.0.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    // TFLite 파일 압축 방지 (필수)
+    aaptOptions {
+        noCompress 'tflite'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    // SDK 모듈 참조
+    // AAR 배포 후에는 아래처럼 교체:
+    // implementation 'com.faceauth:faceauth-sdk:1.0.0'
+    implementation project(':faceauth-sdk')
+
+    implementation "androidx.appcompat:appcompat:$rootProject.androidxAppcompatVersion"
+    implementation "com.google.android.material:material:$rootProject.materialVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$rootProject.androidxConstraintVersion"
+    implementation "androidx.activity:activity:$rootProject.androidxActivityVersion"
+}

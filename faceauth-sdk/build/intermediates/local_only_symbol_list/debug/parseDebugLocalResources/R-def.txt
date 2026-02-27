@@ -1,0 +1,19 @@
+R_DEF: Internal format may change without notice
+local
+id btn_back_to_list
+id btn_go_main
+id btn_reset
+id face_guide_overlay
+id panel_result
+id preview_view
+id scroll_auth_debug
+id tv_auth_banner
+id tv_auth_debug
+id tv_auth_result
+id tv_liveness_result
+id tv_metrics
+id tv_status
+layout activity_authentication
+layout activity_enrollment
+layout activity_liveness
+style Theme.FaceAuth

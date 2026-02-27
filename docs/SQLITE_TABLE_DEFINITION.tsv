@@ -1,0 +1,20 @@
+테이블명	컬럼명(영문)	한글 설명	타입	제약	비고
+face_profile	profile_id	프로파일 ID	INTEGER	PRIMARY KEY, AUTOINCREMENT	내부 PK
+face_profile	user_id	사용자 ID	TEXT	NOT NULL	로그인/인식용 ID
+face_profile	profile_type	프로파일 유형	TEXT	NOT NULL, CHECK IN ('NORMAL','HELMET')	일반/헬멧 등
+face_profile	embedding	임베딩 벡터	BLOB	NOT NULL	암호화된 float[]
+face_profile	embedding_dim	임베딩 차원	INTEGER	NOT NULL	예: 192
+face_profile	quality_score	품질 점수	REAL	NOT NULL	등록 시 품질 게이트 점수
+face_profile	created_at	생성 시각	INTEGER	NOT NULL	Unix timestamp (ms)
+face_profile	model_version	모델 버전	TEXT	NOT NULL	TFLite 모델 버전 식별
+face_profile	device_fingerprint	기기 지문	TEXT	NULL	선택
+face_profile	is_active	활성 여부	INTEGER	NOT NULL, DEFAULT 1	1=활성, 0=논리 삭제
+auth_audit	audit_id	감사 로그 ID	INTEGER	PRIMARY KEY, AUTOINCREMENT	내부 PK
+auth_audit	ts	시각	INTEGER	NOT NULL	Unix timestamp (ms)
+auth_audit	result	인증 결과	TEXT	NOT NULL	예: SUCCESS, NO_MATCH 등
+auth_audit	matched_user_id	매칭된 사용자 ID	TEXT	NULL	매칭 시 user_id
+auth_audit	match_score	매칭 점수	REAL	NULL	코사인 유사도 등
+auth_audit	debug_json	디버그 JSON	TEXT	NULL	POC 모드에서만 저장
+
+테이블명	인덱스명	대상 컬럼	용도
+face_profile	idx_fp_user	user_id, is_active	활성 프로파일 조회·사용자별 조회

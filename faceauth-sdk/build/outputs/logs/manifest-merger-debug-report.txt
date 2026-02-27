@@ -1,0 +1,62 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:2:1-34:12
+	package
+		INJECTED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.CAMERA
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:5:5-65
+	android:name
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:5:22-62
+uses-permission#android.permission.VIBRATE
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:7:5-66
+	android:name
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:7:22-63
+uses-feature#android.hardware.camera.front
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:9:5-90
+	android:required
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:9:64-87
+	android:name
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:9:19-63
+application
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:11:5-32:19
+activity#com.faceauth.sdk.camera.EnrollmentActivity
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:13:9-17:53
+	android:screenOrientation
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:16:13-49
+	android:exported
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:15:13-37
+	android:theme
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:17:13-50
+	android:name
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:14:13-54
+activity#com.faceauth.sdk.camera.AuthenticationActivity
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:20:9-24:53
+	android:screenOrientation
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:23:13-49
+	android:exported
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:22:13-37
+	android:theme
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:24:13-50
+	android:name
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:21:13-58
+activity#com.faceauth.sdk.camera.LivenessActivity
+ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:27:9-31:53
+	android:screenOrientation
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:30:13-49
+	android:exported
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:29:13-37
+	android:theme
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:31:13-50
+	android:name
+		ADDED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml:28:13-52
+uses-sdk
+INJECTED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml
+INJECTED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\_project\face\faceauth-sdk-fixed\faceauth-sdk\src\main\AndroidManifest.xml

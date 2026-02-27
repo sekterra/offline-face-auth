@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <!-- 제목 -->
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔐 안면인식 자동 로그인 데모"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- 사용자 ID 입력 -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_user_id"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="사용자 ID (로그인 ID)"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp">
+
+        <EditText
+            android:id="@+id/et_user_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="예: user01" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 등록 버튼 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_enroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="얼굴 등록"
+        app:layout_constraintTop_toBottomOf="@id/til_user_id"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- 인증 버튼 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_auth"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="안면 인증 시작"
+        app:icon="@android:drawable/ic_menu_camera"
+        app:layout_constraintTop_toBottomOf="@id/btn_enroll"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- 라이브니스 검증 (머리 돌리기 전용) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_liveness"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="라이브니스 검증"
+        app:layout_constraintTop_toBottomOf="@id/btn_auth"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- 결과 표시 -->
+    <TextView
+        android:id="@+id/tv_result"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="결과가 여기에 표시됩니다."
+        android:padding="12dp"
+        android:background="#F5F5F5"
+        android:textSize="14sp"
+        android:fontFamily="monospace"
+        app:layout_constraintTop_toBottomOf="@id/btn_liveness"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- [DEBUG] DB 증거 패널 -->
+    <TextView
+        android:id="@+id/tv_debug_enrolled"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        android:background="#E0E0E0"
+        android:padding="8dp"
+        android:textSize="11sp"
+        android:fontFamily="monospace"
+        android:maxLines="24"
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toBottomOf="@id/tv_result"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 등록 사용자 목록 -->
+    <TextView
+        android:id="@+id/tv_users_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="등록된 사용자 목록"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_debug_enrolled"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ListView
+        android:id="@+id/lv_users"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_users_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_bar" />
+
+    <!-- 하단 버튼 바 -->
+    <LinearLayout
+        android:id="@+id/btn_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_refresh"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="목록 새로고침"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_export_db"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DB 데이터 다운로드"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_reset"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="전체 초기화"
+            android:textColor="@android:color/holo_red_dark" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

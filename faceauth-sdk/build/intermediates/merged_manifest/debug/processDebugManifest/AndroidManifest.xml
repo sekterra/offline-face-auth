@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.faceauth.sdk" >
+
+    <uses-sdk android:minSdkVersion="33" />
+
+    <!-- 카메라 권한 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 진동(챌린지 피드백) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="true" />
+
+    <application>
+
+        <!-- 내장 등록 Activity -->
+        <activity
+            android:name="com.faceauth.sdk.camera.EnrollmentActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FaceAuth" />
+
+        <!-- 내장 인증 Activity -->
+        <activity
+            android:name="com.faceauth.sdk.camera.AuthenticationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FaceAuth" />
+
+        <!-- 라이브니스 검증 (머리 돌리기 전용) -->
+        <activity
+            android:name="com.faceauth.sdk.camera.LivenessActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FaceAuth" />
+    </application>
+
+</manifest>

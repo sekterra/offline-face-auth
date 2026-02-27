@@ -1,0 +1,18 @@
+R_DEF: Internal format may change without notice
+local
+id btn_auth
+id btn_bar
+id btn_enroll
+id btn_export_db
+id btn_liveness
+id btn_refresh
+id btn_reset
+id et_user_id
+id lv_users
+id til_user_id
+id tv_debug_enrolled
+id tv_result
+id tv_title
+id tv_users_label
+layout activity_main
+xml file_paths
